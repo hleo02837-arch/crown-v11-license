@@ -1,1 +1,7 @@
 
+[package]
+name = "crown-v11-license"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
