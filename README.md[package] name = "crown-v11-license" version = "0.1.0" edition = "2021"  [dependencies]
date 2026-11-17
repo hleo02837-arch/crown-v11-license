@@ -2,3 +2,6 @@
 git clone https://github.com/hleo02837-arch/crown-v11-license.git
 cd crown-v11-license
 cargo run
+curl -v 127.0.0.1:PORT/health
+# or raw TCP:
+nc 127.0.0.1 PORT
