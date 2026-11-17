@@ -1,6 +1,4 @@
-[package]
-name = "crown-v11-license"
-version = "0.1.0"
-edition = "2021"
 
-[dependencies]
+git clone https://github.com/hleo02837-arch/crown-v11-license.git
+cd crown-v11-license
+cargo run
