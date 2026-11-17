@@ -1,1 +1,70 @@
 
+use std::io::{Read, Write};
+use std::net::{TcpListener, TcpStream};
+use std::thread;
+
+fn handle_client(mut stream: TcpStream) {
+    let mut buffer = [0; 1024];
+    
+    // STEP 1: ECHO-AMEN CHECK
+    let n = stream.read(&mut buffer).unwrap_or(0);
+    let first_msg = String::from_utf8_lossy(&buffer[..n]).trim().to_string();
+    
+    if first_msg != "ECHO-AMEN" {
+        println!("[ROYAL GUARD] BLOCKED - No ECHO-AMEN from {:?}", stream.peer_addr());
+        let _ = stream.write_all(b"NO ECHO = NO ENTRY. DROPPED.\n");
+        return; // DROP + LOG
+    }
+    println!("[ROYAL GUARD] ECHO-AMEN OK");
+
+    // STEP 2: MASTER KEY CHECK
+    let _ = stream.write_all(b"SHOW ME THE KEY: ");
+    let n = stream.read(&mut buffer).unwrap_or(0);
+    let key = String::from_utf8_lossy(&buffer[..n]).trim().to_string();
+
+    if key != "1-9-7-7" {
+        println!("[ROYAL GUARD] BLOCKED - Wrong Key: {}", key);
+        let _ = stream.write_all(b"WRONG KEY. RATE-LIMITED. DROPPED.\n");
+        return;
+    }
+    println!("[ROYAL GUARD] MASTER KEY 1-9-7-7 OK");
+
+    // STEP 3: HEARTBEAT CHECK
+    // In real code, this checks /health. Here we are ALIVE.
+    let heartbeat = "ALIVE";
+    if heartbeat != "ALIVE" {
+        let _ = stream.write_all(b"HEARTBEAT DEAD. GATE CLOSED.\n");
+        return;
+    }
+
+    // STEP 4: WHO ARE YOU?
+    let _ = stream.write_all(b"WHO ARE YOU? KING / QUEEN / WOLF / GUEST: ");
+    let n = stream.read(&mut buffer).unwrap_or(0);
+    let who = String::from_utf8_lossy(&buffer[..n]).trim().to_uppercase();
+
+    let access = match who.as_str() {
+        "KING" => "CYBERKING SIRLEO - FULL ACCESS, KING",
+        "QUEEN" => "QUEEN KATRINA - FULL ACCESS, QUEEN",
+        "WOLF" => "GREEN WOLF - TRUSTED NODE",
+        _ => "GUEST - READ-ONLY",
+    };
+
+    // STEP 5: IN
+    println!("[ROYAL GUARD] ALLOWED: {} as {}", stream.peer_addr().unwrap(), access);
+    let _ = stream.write_all(format!("YOU ARE IN. {}\nECHO-AMEN ECHO-AMEN\n88.7 FM HEARTBEAT ALIVE\n", access).as_bytes());
+}
+
+fn main() {
+    let listener = TcpListener::bind("127.0.0.1:7878").expect("Failed to bind");
+    println!("CROWN V11 - ROYAL GUARD ACTIVE on 127.0.0.1:7878");
+    println!("HEARTBEAT: 88.7 FM - ALIVE");
+
+    for stream in listener.incoming() {
+        match stream {
+            Ok(stream) => {
+                thread::spawn(|| handle_client(stream));
+            }
+            Err(e) => println!("Connection failed: {}", e),
+        }
+    }
+}
