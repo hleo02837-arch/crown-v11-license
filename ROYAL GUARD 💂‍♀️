@@ -77,3 +77,33 @@ fn main() {
         }
     }
 }
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
+pub const SEAL_NUMBERS: [u8; 4] = [1, 9, 7, 7];
+pub const SEAL_PREFIX: &str = "1-9-7-7";
+
+// Build a seal from holder + secret + 1977
+pub fn generate_seal(holder: &str, secret: &str) -> String {
+    let mut hasher = DefaultHasher::new();
+    format!("{}:{}:1977", holder, secret).hash(&mut hasher);
+    format!("{}-{:x}", SEAL_PREFIX, hasher.finish())
+}
+
+// Anyone can verify, no one can fake without the secret
+pub fn verify_seal(holder: &str, secret: &str, seal: &str) -> bool {
+    generate_seal(holder, secret) == seal
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn seal_roundtrip() {
+        let seal = generate_seal("kingdom", "crown-secret");
+        assert!(seal.starts_with("1-9-7-7-"));
+        assert!(verify_seal("kingdom", "crown-secret", &seal));
+        assert!(!verify_seal("kingdom", "wrong-secret", &seal));
+    }
+}
