@@ -1,4 +1,13 @@
+pub mod heartbeat;
+pub mod license;
+pub mod seal;
 
+pub use heartbeat::{Heartbeat, FREQUENCY};
+pub use license::CrownLicense;
+pub use seal::{generate_seal, verify_seal, SEAL_NUMBERS, SEAL_PREFIX};
+
+pub const VERSION: &str = "11.0.0";
+pub const CODENAME: &str = "ECHO-AMEN";
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::thread;
